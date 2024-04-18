@@ -16,7 +16,7 @@
     #wormholes_game {
       background: black;
       color: white;
-      width: fit-content;
+      width: min-content;
       margin: 0 auto;
       padding-top: 2vw;
       display: flex;
@@ -387,8 +387,11 @@
     }
 
     @media screen and (min-width: 1080px) {
+      #controls {
+        display: none;
+      }
       #wormholes_game #board span {
-        /* padding: .4vw; */
+        padding: calc((93vw - (1px*(39)*22))/((39)*2));
       }
     }
   </style>
