@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <title>Wormholes</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: monospace;
+      background: black;
+    }
+
+    #wormholes_game {
+      background: black;
+      color: white;
+      width: fit-content;
+      margin: 0 auto;
+      padding-top: 2vw;
+      display: flex;
+      flex-direction: column;
+
+      #meta, #footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 5px;
+      }
+
+      #meta {
+
+        .key-controls {
+          display: flex;
+          flex-direction: column;
+          align-items: end;
+        }
+      }
+
+      #footer {
+        margin-top: 5px;
+      }
+
+      .record-wrapper {
+        display: none;
+
+        &.active {
+          display: initial;
+        }
+      }
+
+      .points {
+        font-weight: bold;
+
+        &.has-overcome {
+          color: lightgreen;
+        }
+      }
+    
+      #board {
+        /* border: 5px solid white; */
+        
+        section {
+          padding: 0 0 1px 1px;
+          border: 1px solid white;
+          
+          > div {
+            display: flex;
+            justify-content: center;
+          }
+        }
+      
+        span {
+          display: block;
+          border: 1px solid white;
+          margin: 1px 1px 0 0;
+          font-size: 0;
+          /* padding: .6vw; */
+          padding: calc((93vw - (1px*(39)*3))/((39)*2));
+          box-sizing: border-box;
+        }
+
+        .wall {
+          background-color: white;
+        }
+      
+        .worm,
+        .food {
+          border: 1px solid black;
+        }
+
+        .poop {
+          background-image: linear-gradient(to bottom right, white 0, white 50%);
+          background-size: 50% 50%;
+          background-position: center center;
+          background-repeat: no-repeat;
+
+          &.vanishing {
+            background-size: 70% 70%;
+          }
+        } 
+               
+        .food {
+          background: red;
+          border-radius: 50%;
+        }
+
+        .obstacle, .struct {
+          background: white;
+        }
+
+        .wormhole {
+          background: blueviolet;
+          outline-style: groove;
+          
+          &.wormhole-color-blueviolet {
+            background-color: blueviolet;
+          }
+          
+          &.wormhole-color-crimson {
+            background-color: crimson;
+          }
+          
+          &.wormhole-color-aqua {
+            background-color: aqua;
+          }
+          
+          &.wormhole-color-lime {
+            background-color: lime;
+          }
+          
+          &.wormhole-color-darkorange {
+            background-color: darkorange;
+          }
+          
+          &.wormhole-color-deeppink {
+            background-color: blueviolet;
+          }
+        }
+
+        .worm {
+          background: lightgreen;
+
+          &.head {
+            background-repeat: no-repeat;
+
+            &.dir-e {
+              background-image:
+                linear-gradient(to top left, red 50%, transparent 0),
+                linear-gradient(to top right, transparent 50%, red 0);
+              background-size: 100% 50%;
+              background-position: top, bottom;
+            }
+            
+            &.dir-w {
+              background-image:
+                linear-gradient(to right top, red 50%, transparent 0),
+                linear-gradient(to left top, transparent 50%, red 0);
+              background-size: 100% 50%;
+              background-position: top, bottom;
+            }
+            
+            &.dir-n {
+              background-image:
+                linear-gradient(to left bottom, red 50%, transparent 0),
+                linear-gradient(to right bottom, red 50%, transparent 0);
+              background-size: 50% 100%;
+              background-position: left, right;
+            }
+            
+            &.dir-s {
+              background-image:
+                linear-gradient(to bottom right, transparent 50%, red 0),
+                linear-gradient(to top right, red 50%, transparent 0);
+              background-size: 50% 100%;
+              background-position: left, right;
+            }
+          }
+
+          &.tail {
+            background-color: black;
+
+            &.dir-w {
+              background-image:
+                linear-gradient(to top left, lightgreen 50%, transparent 0),
+                linear-gradient(to top right, transparent 50%, lightgreen 0);
+              background-size: 100% 50%;
+              background-position: top, bottom;
+            }
+            
+            &.dir-e {
+              background-image:
+                linear-gradient(to right top, lightgreen 50%, transparent 0),
+                linear-gradient(to left top, transparent 50%, lightgreen 0);
+              background-size: 100% 50%;
+              background-position: top, bottom;
+            }
+            
+            &.dir-s {
+              background-image:
+                linear-gradient(to left bottom, lightgreen 50%, transparent 0),
+                linear-gradient(to right bottom, lightgreen 50%, transparent 0);
+              background-size: 50% 100%;
+              background-position: left, right;
+            }
+            
+            &.dir-n {
+              background-image:
+                linear-gradient(to bottom right, transparent 50%, lightgreen 0),
+                linear-gradient(to top right, lightgreen 50%, transparent 0);
+              background-size: 50% 100%;
+              background-position: left, right;
+            }
+          }
+
+          &.food-eaten {
+            background-image: linear-gradient(to bottom right, red 0, red 50%);
+            background-size: 50% 50%;
+            background-position: center center;
+            background-repeat: no-repeat;
+          }
+        }
+      }
+
+      .btn {
+        cursor: pointer;
+
+        * {
+          pointer-events: none;
+        }
+      }
+
+      .btn-false {
+        display: inline-block;
+        font-weight: bold;
+        border: 1px solid white;
+        border-radius: 3px;
+        padding: 1px 3px;
+        margin-bottom: 5px;
+        background: transparent;
+        color: inherit;
+        font-family: inherit;
+
+        .active {
+          display: none;
+        }
+        .inactive {
+          display: unset;
+        }
+      }
+
+      &[data-gamemode="infinity"] {
+        #board {
+          section {
+            border-color: black;
+          }
+          .wall {
+            border-color: black;
+            background-color: black;
+          }
+        }
+
+        #infinity_control {
+          .active {
+            display: unset;
+          }
+          .inactive {
+            display: none;
+          }
+        }
+      }
+
+      &[data-controlmode="relative"] {
+        #relative_control {
+          .active {
+            display: unset;
+          }
+          .inactive {
+            display: none;
+          }
+        }
+
+        .btn-absolute {
+          display: none;
+        }
+      }
+
+      &[data-gamestate="ready"] {
+        .pre-game-controls {
+          display: initial;
+        }
+
+        .reset-control {
+          display: none;
+        }
+
+        .label-on-ready {
+          display: initial;
+        }
+
+        .label-on-started,
+        .label-on-paused,
+        .label-on-ended {
+          display: none;
+        }
+      }
+
+      &[data-gamestate="started"] {
+        .pre-game-controls {
+          display: none;
+        }
+        
+        .reset-control {
+          display: initial;
+        }
+
+        .label-on-started {
+          display: initial;
+        }
+
+        .label-on-ready,
+        .label-on-paused,
+        .label-on-ended {
+          display: none;
+        }
+      }
+
+      &[data-gamestate="paused"] {
+        .pre-game-controls {
+          display: none;
+        }
+        
+        .reset-control {
+          display: initial;
+        }
+
+        .label-on-paused {
+          display: initial;
+        }
+
+        .label-on-ready,
+        .label-on-started,
+        .label-on-ended {
+          display: none;
+        }
+      }
+
+      &[data-gamestate="ended"] {
+        .pre-game-controls {
+          display: none;
+        }
+        
+        .reset-control {
+          display: initial;
+        }
+
+        .label-on-ended {
+          display: initial;
+        }
+
+        .label-on-ready,
+        .label-on-started,
+        .label-on-paused {
+          display: none;
+        }
+
+        #board {
+          section,
+          .worm {
+            border-color: red !important;
+          }
+        }
+      }
+
+      #controls {
+        text-align: center;
+        padding-top: 10px;
+
+        div {
+          margin: 5px 0;
+        }
+
+        .btn {
+          width: 20vw;
+        }
+      }
+    }
+
+    @media screen and (min-width: 1080px) {
+      #wormholes_game #board span {
+        /* padding: .4vw; */
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="wormholes_game" data-gamestate="ready">
+    <aside id="meta">
+      <span>
+        <span class="points">0</span>
+        <span class="record-wrapper">/ <span class="record">0</span></span>
+      </span>
+      <span class="key-controls">
+        <button class="btn-false btn-enter action-control btn">
+          enter:
+          <span class="label-on-ready">start</span>
+          <span class="label-on-started">pause</span>
+          <span class="label-on-paused">resume</span>
+          <span class="label-on-ended">reset</span>
+          game
+        </button>
+        <button class="btn-false btn-esc reset-control btn">esc: reset game</button>
+        <span class="pre-game-controls">
+          <button id="infinity_control" class="btn-false btn-i btn">
+            i:
+            <span class="active">open</span>
+            <span class="inactive">walled</span>
+            grid
+          </button>
+          <button id="relative_control" class="btn-false btn-u btn">
+            u:
+            <span class="active">relative</span>
+            <span class="inactive">absolute</span>
+            controls
+          </button>
+        </span>
+      </span>
+    </aside>
+    <div id="board"></div>
+    <aside id="footer">
+      <span>Wormholes by @leobetosouza</span>
+      <span>
+        <span class="walled-record">0</span> | <span class="infinity-record">0</span>i
+      </span>
+    </aside>
+    <aside id="controls">
+      <button class="btn-arrowup btn-absolute btn">&uarr;</button>
+      <div>
+        <button class="btn-arrowleft btn">&larr;</button>
+        <button class="btn-enter btn">
+          <span class="label-on-ready">Start</span>
+          <span class="label-on-started">Pause</span>
+          <span class="label-on-paused">Resume</span>
+          <span class="label-on-ended">Reset</span>
+        </button>
+        <button class="btn-arrowright btn">&rarr;</button>
+      </div>
+      <button class="btn-arrowdown btn-absolute btn">&darr;</button>
+    </aside>
+  </main>
+</body>
+<script>
+  let walledRecord = +localStorage.getItem('wormholes.walledRecord') || 0;
+  let infinityRecord = +localStorage.getItem('wormholes.infinityRecord') || 0;
+  let infinityGameMode = Boolean(+localStorage.getItem('wormholes.isInfinityGame'));
+  let relativeControlsMode = Boolean(+localStorage.getItem('wormholes.isRelativeControls'));
+
+  const board = document.createElement('section');
+  
+  const REDRAW_TIME = 200;
+  const BOARD_WIDTH = 37;
+  const BOARD_HEIGHT = 29;
+
+  // This creates a 2x2 matrix 
+  // from { x: -1, y: -1 }
+  // to { x: BOARD_WIDTH+1, y: BOARD_HEIGHT+1 }
+  // These are all the positions we need to build the game grid
+
+  const positions = Array.from(
+    { length: BOARD_HEIGHT + 2 },
+    (_, y) => Array.from(
+      { length: BOARD_WIDTH + 2 },
+      (_, x) => ({ x: x - 1, y: y - 1 })
+    )
+  );
+
+  let defaultFoodValue = 2;
+  let eatingCount = 0;
+  let defaultFoodsToPlace = 3;
+  let direction = 'E';
+  const worm = [{ x: 0, y: 0, direction }];
+  const foods = [];
+  const movementBuffer = [];
+  const poops = [];
+  const obstacles = [];
+
+  const wormholes = [
+    { x: BOARD_WIDTH-3, y: 2, target: 1, group: 0 },
+    { x: 2, y: BOARD_HEIGHT-3, target: 0, group: 0 },
+    { x: 2, y: 2, target: 3, group: 1 },
+    { x: BOARD_WIDTH-3, y: BOARD_HEIGHT-3, target: 2, group: 1 }
+  ];
+
+  const wormholesColors = [
+    'blueviolet',
+    'crimson',
+    'aqua',
+    'lime',
+    'darkorange',
+    'deeppink',
+  ];
+
+  const structures = [
+    {
+        init: { x: Math.floor(BOARD_WIDTH/2), y: 0 },
+        axis: 'y',
+        length: BOARD_HEIGHT - 1,
+        step: 1
+    },
+    {
+        init: { y: Math.floor(BOARD_HEIGHT/2), x: 0 },
+        axis: 'x',
+        length: Math.floor(BOARD_WIDTH/2) - 1,
+        step: 2
+    },
+    {
+        init: { y: Math.floor(BOARD_HEIGHT/2), x: Math.floor(BOARD_WIDTH/2) + 2 },
+        axis: 'x',
+        length: Math.floor(BOARD_WIDTH/2) - 1,
+        step: 2
+    }
+  ];
+
+  let structuresPositions = null;
+
+  const oppositeDirection = {
+    N : 'S',
+    S : 'N',
+    E : 'W',
+    W : 'E'
+  };
+
+  const relativeDirections = {
+    N: {
+      'arrowright': 'E',
+      'arrowleft': 'W'
+    },
+    S: {
+      'arrowright': 'W',
+      'arrowleft': 'E'
+    },
+    E: {
+      'arrowright': 'S',
+      'arrowleft': 'N'
+    },
+    W: {
+      'arrowright': 'N',
+      'arrowleft': 'S'
+    }
+  };
+
+  let willReset = false;
+  let hasGameOver = false;
+  let initialized = false;
+  let paused = false;
+  let nextHead = null;
+
+  window.addEventListener('DOMContentLoaded', prepareGame);
+  window.addEventListener('keydown', handleInput);
+
+  window.addEventListener('click', (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
+
+    let eventOptions;
+
+    if (evt.target.classList.contains('btn-enter')) {
+      eventOptions = {
+        key: 'Enter',
+        keyCode: 13,
+        which: 13
+      };
+    }
+
+    if (evt.target.classList.contains('btn-esc')) {
+      eventOptions = {
+        key: 'Escape',
+        keyCode: 27,
+        which: 27
+      };
+    }
+
+    if (evt.target.classList.contains('btn-arrowleft')) {
+      eventOptions = {
+        key: 'ArrowLeft',
+        keyCode: 37,
+        which: 37
+      };
+    }
+
+    if (evt.target.classList.contains('btn-arrowright')) {
+      eventOptions = {
+        key: 'ArrowRight',
+        keyCode: 39,
+        which: 39
+      };
+    }
+
+    if (evt.target.classList.contains('btn-arrowup')) {
+      eventOptions = {
+        key: 'ArrowUp',
+        keyCode: 38,
+        which: 38
+      };
+    }
+
+    if (evt.target.classList.contains('btn-arrowdown')) {
+      eventOptions = {
+        key: 'ArrowDown',
+        keyCode: 40,
+        which: 40
+      };
+    }
+
+    if (evt.target.classList.contains('btn-u')) {
+      eventOptions = {
+        key: 'u',
+        keyCode: 85,
+        which: 85
+      };
+    }
+
+    if (evt.target.classList.contains('btn-i')) {
+      eventOptions = {
+        key: 'i',
+        keyCode: 73,
+        which: 73
+      };
+    }
+
+    const customEvent = new KeyboardEvent('keydown', eventOptions); 
+
+    window.dispatchEvent(customEvent);
+  })
+
+  const gameWrapper = document.getElementById('wormholes_game');
+
+  const pointsCounters = gameWrapper.getElementsByClassName('points');
+  const recordCounters = gameWrapper.getElementsByClassName('record');
+  const recordWrappers = gameWrapper.getElementsByClassName('record-wrapper');
+  const walledRecordCounters = gameWrapper.getElementsByClassName('walled-record');
+  const infinityRecordCounters = gameWrapper.getElementsByClassName('infinity-record');
+  
+  function resetGame() {
+    gameWrapper.setAttribute('data-gamestate', 'ready');
+    direction = 'E';
+
+    worm.length = 0;
+    worm.push({ x: 0, y: 0, direction });
+
+    renderPoints();
+    
+    movementBuffer.length = 0;
+    poops.length = 0;
+    obstacles.length = 0;
+    foods.length = 0;
+
+    nextHead = null;
+    direction = 'E';
+    paused = false;
+    initialized = false;
+    hasGameOver = false;
+    willReset = false;
+    
+    drawBoard();
+  }
+  
+  function prepareGame() {
+    document.getElementById('board').appendChild(board);
+
+    shuffle(wormholesColors);
+    
+    setGridGameMode();
+    setControlMode();
+    renderRecords();
+    convertStructures();
+    drawBoard();
+  }
+  
+  function initGame() {
+    initialized = true;
+    gameWrapper.setAttribute('data-gamestate', 'started');
+    gameLoop();
+  }
+  
+  async function gameLoop() {
+    do {
+      if (paused) {
+        console.warn("PAUSOU");
+        await delay(REDRAW_TIME/2);
+        continue;
+      }
+      
+      renderPoints();
+
+      createNextHead();
+    
+      if (!foods.length) createFood();
+
+      drawBoard();
+      
+      moveWorm();
+
+      cleanPoop();
+      
+      if (checkGameOver()) {
+        gameOver();
+        break;
+      }
+
+      if (willReset) {
+        resetGame();
+        break;
+      }
+
+      await delay(REDRAW_TIME);
+      
+    } while(true);
+  }
+  
+  function drawBoard() {
+    board.innerHTML = '';
+    
+    const head = worm[0];
+    const tail = worm[worm.length - 1];
+
+    // We will loop through the positions matrix and generate
+    // each element of the HTML grid we will use as game canvas
+    // each line of the grid will be a <div>
+    // each element will be an <span>
+    // and each <span> will have the CSS classes that represents
+    // what features on that position
+
+    const grid = positions.reduce((frag, lines) => {
+      const gridLines = lines.reduce((line, pos) => {
+        const cell = document.createElement('span');
+        const cellClasses = cell.classList;
+        
+        cell.innerHTML = '&nbsp;';
+        
+        const { x, y } = pos;
+
+        cell.setAttribute('data-x', x);
+        cell.setAttribute('data-y', y)
+
+        let bodySegment, poop, wormhole;
+
+        // We do not need to use the comma operator on this condition,
+        // but I keep it for consistence with the next conditions.
+
+        if (bodySegment = worm.find(seg => equals(seg, pos)), bodySegment) {
+          cellClasses.add('worm');
+          
+          if (equals(head, bodySegment))
+            cellClasses.add('head', `dir-${ head.direction.toLowerCase() }`);
+          else if (equals(tail, bodySegment)) 
+            cellClasses.add(
+              'tail',
+              `dir-${ oppositeDirection[tail.direction].toLowerCase() }`
+            );
+          else if (bodySegment.hasFood)
+            cellClasses.add('food-eaten');
+          else
+            cellClasses.add(`dir-${ bodySegment.direction.toLowerCase() }`); 
+        }
+
+        // A cell can be a body segment AND other stuff,
+        // but NOT more than one of these stuffs at the same time,
+        // "else if" and the commma operator is used to reduce
+        // array searchs inside of this loop for performance sake.
+
+        if (includes(foods, pos)) 
+          cellClasses.add('food');
+        else if (isWall(pos))
+          cellClasses.add('wall');
+        else if (includes(structuresPositions, pos))
+          cellClasses.add('struct');
+        else if (includes(obstacles, pos))
+          cellClasses.add('obstacle');
+        else if (wormhole = wormholes.find(w => equals(w, pos)), wormhole)
+          cellClasses.add(
+            'wormhole',
+            `wormhole-color-${wormholesColors[wormhole.group]}`
+          );
+        else if (poop = poops.find(p => equals(p, pos)), poop) {
+          cellClasses.add('poop');
+          
+          if (poop.timeToVanish < REDRAW_TIME * 6) {
+            cellClasses.add('vanishing');
+          } 
+        }
+        
+        line.appendChild(cell);
+
+        return line;
+      }, document.createElement('div'));
+      
+      frag.appendChild(gridLines);
+      
+      return frag;
+    }, document.createDocumentFragment());
+    
+    board.appendChild(grid);
+  }
+  
+  function createFood() {
+    let validPositons = positions
+      .reduce((acc, arr) => ([ ...acc, ...arr ]), [])
+      .filter(pos =>
+        // food cannot spawn on a wall
+        !isWall(pos)
+        &&
+        // food cannot spawn
+        // * in front of the worm
+        // * into the worm
+        // * into a wormhole
+        // * on an obstacle or structure
+        !includes([
+          nextHead, ...worm, ...wormholes, ...obstacles, ...structuresPositions
+        ], pos)
+      );
+
+    for (let i = 0; i < defaultFoodsToPlace; i++) {
+      validPositions = validPositons
+        // food cannot spawn into another food
+        .filter(pos => !includes(foods, pos))
+
+      const food = validPositons
+        .at(
+          getRandomInt(0, validPositons.length-1)
+        );
+      
+      food.value = defaultFoodValue;
+      removePoop(food);
+
+      foods.push(food);
+    }
+  }
+
+  function createNextHead() {
+    const head = worm[0];
+    const wormhole = wormholes.find((w) => equals(w, head));
+
+    if (wormhole) {
+      const { x, y } = wormholes[wormhole.target];
+      nextHead = { x, y };
+    } else
+      nextHead = { ...head }
+    
+    nextHead.hasFood = false;
+    
+    let nextDirection = movementBuffer.length ? movementBuffer.shift() : null;
+
+    if (nextDirection === oppositeDirection[direction])
+      nextDirection = null;
+
+    if (nextDirection)
+      direction = nextDirection;
+
+    nextHead.direction = direction;
+
+    switch (direction) {
+      case 'N': nextHead.y--; break;
+      case 'S': nextHead.y++; break;
+      case 'E': nextHead.x++; break;
+      case 'W': nextHead.x--; break;
+    }
+
+    if (infinityGameMode) {
+      if (nextHead.x === -1) nextHead.x = BOARD_WIDTH-1;
+      if (nextHead.y === -1) nextHead.y = BOARD_HEIGHT-1;
+
+      if (nextHead.x === BOARD_WIDTH) nextHead.x = 0;
+      if (nextHead.y === BOARD_HEIGHT) nextHead.y = 0;
+    }
+  }
+  
+  function moveWorm() {
+    removePoop(nextHead);
+
+    if (eatFood(nextHead))
+      nextHead.hasFood = true;
+    else if (eatingCount)
+      eatingCount--;
+    else
+      createPoop(worm.pop());
+
+    worm.unshift(nextHead);    
+  }
+  
+  function eatFood(pos) {
+    const idx = foods.findIndex((f) => equals(f, pos));
+
+    if (idx === -1) return false;
+
+    const food = foods[idx];
+
+    eatingCount += food.value;
+    foods.splice(idx, 1);
+
+    return true;
+  }
+
+  function createPoop(poop) {
+    if (worm.length > 1 && poop.hasFood) {
+      const { x, y } = poop; 
+      poops.push({ x, y, timeToVanish: REDRAW_TIME * Math.min(BOARD_WIDTH, BOARD_HEIGHT) * 5 });
+    }
+  }
+
+  function cleanPoop() {
+    if (poops.length > 10)
+      removePoop(poops[0]);
+
+    for (const poop of poops) {
+      poop.timeToVanish -= REDRAW_TIME;
+      
+      if (!poop.timeToVanish) {
+        removePoop(poop);
+        obstacles.push(poop);
+      }
+    }
+  }
+
+  function removePoop(pos) {
+    const idx = poops.findIndex((c) => equals(c, pos));
+    
+    if (idx > -1) poops.splice(idx, 1);
+  }
+
+  function convertStructures() {
+    structuresPositions = structures
+      .reduce((acc, { init, axis, length, step = 1 }) => {
+        const pos = { ...init };
+        
+        acc.push(pos);
+        
+        let { x, y } = pos;
+        
+        for (let i = 0; i < length; i += step) {
+          if (axis === 'x') x += step;
+          if (axis === 'y') y += step;
+          acc.push({ x, y });
+        }
+        
+        return acc;
+      }, []);
+  }
+  
+  function checkGameOver() {
+    const head = worm[0];
+
+    return head.x === -1   || head.y === -1 ||
+      head.x === BOARD_WIDTH || head.y === BOARD_HEIGHT ||
+      includes(worm.slice(3), head) ||
+      includes(obstacles, head) ||
+      includes(structuresPositions, head);
+  }
+
+  function renderPoints() {
+    const points = worm.length - 1;
+    const record = infinityGameMode ? infinityRecord : walledRecord;
+    const hasOvercomeRecord = points > record;
+
+    for (const counter of pointsCounters) {
+      counter.innerText = points;
+      if (hasOvercomeRecord) counter.classList.add('has-overcome');
+    }
+  }
+  
+  function renderRecords() {
+    const record = infinityGameMode ? infinityRecord : walledRecord;
+
+    for (const counter of recordCounters)
+      counter.innerText = record;
+
+    for (const counter of recordCounters)
+      counter.classList.remove('has-overcome');
+    
+    for (const wrapper of recordWrappers)
+      wrapper.classList.toggle('active', record > 0);
+    
+    for (const counter of  infinityRecordCounters)
+      counter.innerText = infinityRecord;
+    
+    for (const counter of walledRecordCounters)
+      counter.innerText = walledRecord;
+  }
+
+  function setRecord() {
+    const points = worm.length - 1;
+    const previousRecord = infinityGameMode ? infinityRecord : walledRecord;
+    
+    if (points > previousRecord) {
+      if (infinityGameMode) {
+        infinityRecord = points;
+        localStorage.setItem('wormholes.infinityRecord', infinityRecord);
+      } else {
+        walledRecord = points;
+        localStorage.setItem('wormholes.walledRecord', walledRecord);
+      }
+
+      renderRecords();
+    }
+  }
+
+  function togglePause() {
+    paused = !paused;
+    gameWrapper.setAttribute('data-gamestate', paused ? 'paused' : 'started');
+  }
+  
+  function handlePlayPause() {
+    if (hasGameOver) {
+      resetGame();
+      return;
+    }
+    
+    if (!initialized) {
+      initGame();
+      return;
+    }
+    
+    togglePause();
+  }
+
+  function toggleGameMode() {
+    infinityGameMode = !infinityGameMode;
+    setGridGameMode();
+    localStorage.setItem('wormholes.isInfinityGame', infinityGameMode ? 1 : 0);
+    renderRecords();
+  }
+
+  function setGridGameMode() {
+    gameWrapper.setAttribute('data-gamemode', infinityGameMode ? 'infinity' : 'walled');
+  }
+
+  function toggleControlMode() {
+    relativeControlsMode = !relativeControlsMode;
+    setControlMode();
+    localStorage.setItem('wormholes.isRelativeControls', relativeControlsMode ? 1 : 0);
+  }
+
+  function setControlMode() {
+    gameWrapper.setAttribute('data-controlmode', relativeControlsMode ? 'relative' : 'absolute');
+  }
+  
+  function handleInput(e) {
+    switch (e.key.toLowerCase()) {
+      case 'enter':
+      case 'p':
+        handlePlayPause();
+        break;
+      case 'escape':
+      case 'esc':
+        willReset = true;
+        break;
+      case 'i':
+        if (!initialized) toggleGameMode();
+        break;
+      case 'u':
+        if (!initialized) toggleControlMode();
+        break;
+      case 'arrowup':
+      case 'w':
+        if (!relativeControlsMode) {
+          if (isPlaying()) movementBuffer.push('N');
+          break;
+        }
+      case 'arrowdown':
+      case 's':
+        if (!relativeControlsMode) {
+          if (isPlaying()) movementBuffer.push('S');
+          break;
+        }
+      case 'arrowright':
+      case 'd':
+        if (isPlaying()) {
+          if (relativeControlsMode)
+            movementBuffer.push(relativeDirections[direction]['arrowright']);
+          else
+            movementBuffer.push('E');
+        }
+
+        break;
+      case 'arrowleft':
+      case 'a':
+        if (isPlaying()) {
+          if (relativeControlsMode)
+            movementBuffer.push(relativeDirections[direction]['arrowleft']);
+          else
+            movementBuffer.push('W');
+        }
+
+        break;
+      default:
+        return;
+    }
+    
+    e.preventDefault();
+  }
+
+  function isPlaying() {
+    return initialized && !paused && !hasGameOver;
+  }
+  
+  function gameOver() {
+    hasGameOver = true;
+
+    gameWrapper.setAttribute('data-gamestate', 'ended');
+    drawBoard();
+    setRecord();
+    console.warn('GAME OVER');
+  }
+
+  function isWall({ x, y }) {
+    return x === -1 || y === -1 || x === BOARD_WIDTH || y === BOARD_HEIGHT;
+  }
+  
+  function equals(o1, o2) {
+    return o1.x === o2.x && o1.y === o2.y;
+  }
+  
+  function includes(arr, obj) {
+    return arr.findIndex((c) => equals(obj, c)) !== -1;
+  }
+  
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+  
+  async function delay(ms) {
+    return new Promise(resolve => setTimeout(() => resolve(), ms));
+  }
+
+  async function shuffle(arr) {
+    return arr.sort(() => .5 - Math.random());
+  }
+</script>
+</html>
