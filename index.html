@@ -953,8 +953,7 @@
   function checkGameOver() {
     const head = worm[0];
 
-    return head.x === -1   || head.y === -1 ||
-      head.x === BOARD_WIDTH || head.y === BOARD_HEIGHT ||
+    return isWall(head) ||
       includes(worm.slice(3), head) ||
       includes(obstacles, head) ||
       includes(structuresPositions, head);
