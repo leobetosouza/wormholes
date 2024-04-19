@@ -559,7 +559,7 @@
   let nextHead = null;
 
   window.addEventListener('DOMContentLoaded', prepareGame);
-  window.addEventListener('keydown', handleInput);
+  window.addEventListener('keydown', handleKeyInput);
   window.addEventListener('click', handleClick);
 
   const gameWrapper = document.getElementById('wormholes_game');
@@ -972,7 +972,7 @@
     gameWrapper.setAttribute('data-controlmode', relativeControlsMode ? 'relative' : 'absolute');
   }
   
-  function handleInput(e) {
+  function handleKeyInput(e) {
     switch (e.key.toLowerCase()) {
       case 'enter':
       case 'p':
