@@ -41,6 +41,13 @@
         margin-top: 5px;
       }
 
+      #level_name {
+        text-align: center;
+        font-size: larger;
+        margin: 0 0 5px;
+        font-weight: bold;
+      }
+
       .record-wrapper {
         display: none;
 
@@ -256,15 +263,6 @@
             background-color: black;
           }
         }
-
-        #infinity_control {
-          .active {
-            display: unset;
-          }
-          .inactive {
-            display: none;
-          }
-        }
       }
 
       &[data-controlmode="relative"] {
@@ -411,12 +409,7 @@
         </button>
         <button class="btn-false btn-esc reset-control btn">esc: reset game</button>
         <span class="pre-game-controls">
-          <button id="infinity_control" class="btn-false btn-i btn">
-            i:
-            <span class="active">open</span>
-            <span class="inactive">walled</span>
-            grid
-          </button>
+          <button id="level_control" class="btn-false btn-l btn">l: change level</button>
           <button id="relative_control" class="btn-false btn-u btn">
             u:
             <span class="active">relative</span>
@@ -426,11 +419,12 @@
         </span>
       </span>
     </aside>
+    <div id="level_name">Wormholes</div>
     <div id="board"></div>
     <aside id="footer">
       <span>Wormholes by @leobetosouza</span>
       <span>
-        <span class="walled-record">0</span> | <span class="infinity-record">0</span>i
+        <span class="record">0</span>
       </span>
     </aside>
     <aside id="controls">
@@ -450,10 +444,8 @@
   </main>
 </body>
 <script>
-  let walledRecord = +localStorage.getItem('wormholes.walledRecord') || 0;
-  let infinityRecord = +localStorage.getItem('wormholes.infinityRecord') || 0;
-  let infinityGameMode = Boolean(+localStorage.getItem('wormholes.isInfinityGame'));
   let relativeControlsMode = Boolean(+localStorage.getItem('wormholes.isRelativeControls'));
+  let currentLevel = +localStorage.getItem('wormholes.level');
 
   const board = document.createElement('section');
   
@@ -474,25 +466,91 @@
     )
   );
 
-  let defaultFoodValue = 2;
+  const levels = [
+    {
+      name: 'Level 0',
+      isWalled: false,
+      defaultFoodValue: 5,
+      defaultFoodsToPlace: 3,
+      startPosition: { x: 0, y: 0 },
+      startDirection: 'E',
+      structures: [],
+      wormholes: [
+        { x: BOARD_WIDTH-3, y: 2, target: 1, group: 0 },
+        { x: 2, y: BOARD_HEIGHT-3, target: 0, group: 0 },
+        { x: 2, y: 2, target: 3, group: 1 },
+        { x: BOARD_WIDTH-3, y: BOARD_HEIGHT-3, target: 2, group: 1 }
+      ],
+    },
+    {
+      name: 'Level 1',
+      isWalled: true,
+      defaultFoodValue: 5,
+      defaultFoodsToPlace: 3,
+      startPosition: { x: 0, y: 0 },
+      startDirection: 'E',
+      structures: [],
+      wormholes: [
+        { x: BOARD_WIDTH-3, y: 2, target: 1, group: 0 },
+        { x: 2, y: BOARD_HEIGHT-3, target: 0, group: 0 },
+        { x: 2, y: 2, target: 3, group: 1 },
+        { x: BOARD_WIDTH-3, y: BOARD_HEIGHT-3, target: 2, group: 1 }
+      ],
+    },
+    {
+      name: 'Level 2',
+      isWalled: true,
+      defaultFoodValue: 2,
+      defaultFoodsToPlace: 3,
+      startPosition: { x: 0, y: 0 },
+      startDirection: 'E',
+      structures: [
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2), y: 0 },
+            axis: 'y',
+            length: BOARD_HEIGHT - 1,
+            step: 1
+        },
+        {
+            init: { y: Math.floor(BOARD_HEIGHT/2), x: 0 },
+            axis: 'x',
+            length: Math.floor(BOARD_WIDTH/2) - 1,
+            step: 2
+        },
+        {
+            init: { y: Math.floor(BOARD_HEIGHT/2), x: Math.floor(BOARD_WIDTH/2) + 2 },
+            axis: 'x',
+            length: Math.floor(BOARD_WIDTH/2) - 1,
+            step: 2
+        }
+      ],
+      wormholes: [
+        { x: BOARD_WIDTH-3, y: 2, target: 1, group: 0 },
+        { x: 2, y: BOARD_HEIGHT-3, target: 0, group: 0 },
+        { x: 2, y: 2, target: 3, group: 1 },
+        { x: BOARD_WIDTH-3, y: BOARD_HEIGHT-3, target: 2, group: 1 }
+      ],
+    }
+  ];
+
   let eatingCount = 0;
-  let defaultFoodsToPlace = 3;
-  let direction = 'E';
-  const worm = [{ x: 0, y: 0, direction }];
+
+  let record = 0;
+  let levelName = null;
+  let defaultFoodValue = null;
+  let defaultFoodsToPlace = null;
+  let direction = null;
+  let startPosition = null;
+  let infinityGameMode = false;
+  const worm = [];
   const foods = [];
   const movementBuffer = [];
   const poops = [];
   const obstacles = [];
 
-  const wormholes = [
-    { x: BOARD_WIDTH-3, y: 2, target: 1, group: 0 },
-    { x: 2, y: BOARD_HEIGHT-3, target: 0, group: 0 },
-    { x: 2, y: 2, target: 3, group: 1 },
-    { x: BOARD_WIDTH-3, y: BOARD_HEIGHT-3, target: 2, group: 1 }
-  ];
+  let wormholes = [];
 
   const wormholesColors = [
-    'blueviolet',
     'crimson',
     'aqua',
     'lime',
@@ -500,26 +558,7 @@
     'deeppink',
   ];
 
-  const structures = [
-    {
-        init: { x: Math.floor(BOARD_WIDTH/2), y: 0 },
-        axis: 'y',
-        length: BOARD_HEIGHT - 1,
-        step: 1
-    },
-    {
-        init: { y: Math.floor(BOARD_HEIGHT/2), x: 0 },
-        axis: 'x',
-        length: Math.floor(BOARD_WIDTH/2) - 1,
-        step: 2
-    },
-    {
-        init: { y: Math.floor(BOARD_HEIGHT/2), x: Math.floor(BOARD_WIDTH/2) + 2 },
-        axis: 'x',
-        length: Math.floor(BOARD_WIDTH/2) - 1,
-        step: 2
-    }
-  ];
+  let structures = [];
 
   let structuresPositions = null;
 
@@ -564,8 +603,6 @@
   const pointsCounters = gameWrapper.getElementsByClassName('points');
   const recordCounters = gameWrapper.getElementsByClassName('record');
   const recordWrappers = gameWrapper.getElementsByClassName('record-wrapper');
-  const walledRecordCounters = gameWrapper.getElementsByClassName('walled-record');
-  const infinityRecordCounters = gameWrapper.getElementsByClassName('infinity-record');
   
   function resetGame() {
     gameWrapper.setAttribute('data-gamestate', 'ready');
@@ -593,15 +630,41 @@
   
   function prepareGame() {
     document.getElementById('board').appendChild(board);
-
-    shuffle(wormholesColors);
     
-    setGridGameMode();
     setControlMode();
-    renderRecords();
+    
+    prepareLevel();
+  }
+
+  function prepareLevel() {
+    shuffle(wormholesColors);
+
+    const level = levels[currentLevel];
+
+    levelName = level.name;
+    defaultFoodValue = level.defaultFoodValue;
+    defaultFoodsToPlace = level.defaultFoodsToPlace;
+    startPosition = level.startPosition;
+    direction = level.startDirection;
+
+    wormholes.length = 0;
+    wormholes = [ ...level.wormholes ];
+
+    structures.length = 0;
+    structures = [ ...level.structures ];
+
+    setLevelName();
+    setGameMode(level.isWalled);
+    
     convertStructures();
+
+    worm.length = 0;
+    worm.push({ ...startPosition, direction });
+    getRecord();
+    renderRecords();
     drawBoard();
   }
+
   
   function initGame() {
     initialized = true;
@@ -882,9 +945,18 @@
       includes(structuresPositions, head);
   }
 
+  function changeLevel() {
+    currentLevel = currentLevel < levels.length - 1
+      ? currentLevel + 1
+      : 0
+      ;
+    
+    localStorage.setItem(`wormholes.level`, currentLevel);
+    prepareLevel();
+  }
+
   function renderPoints() {
     const points = worm.length - 1;
-    const record = infinityGameMode ? infinityRecord : walledRecord;
     const hasOvercomeRecord = points > record;
 
     for (const counter of pointsCounters) {
@@ -892,39 +964,27 @@
       if (hasOvercomeRecord) counter.classList.add('has-overcome');
     }
   }
+
+  function getRecord() {
+    record = +localStorage.getItem(`wormholes.records.level${currentLevel}`) || 0;    
+  }
   
   function renderRecords() {
-    const record = infinityGameMode ? infinityRecord : walledRecord;
-
-    for (const counter of recordCounters)
+    for (const counter of recordCounters) {
       counter.innerText = record;
-
-    for (const counter of recordCounters)
       counter.classList.remove('has-overcome');
-    
+    }
+
     for (const wrapper of recordWrappers)
       wrapper.classList.toggle('active', record > 0);
-    
-    for (const counter of  infinityRecordCounters)
-      counter.innerText = infinityRecord;
-    
-    for (const counter of walledRecordCounters)
-      counter.innerText = walledRecord;
   }
 
   function setRecord() {
     const points = worm.length - 1;
-    const previousRecord = infinityGameMode ? infinityRecord : walledRecord;
-    
-    if (points > previousRecord) {
-      if (infinityGameMode) {
-        infinityRecord = points;
-        localStorage.setItem('wormholes.infinityRecord', infinityRecord);
-      } else {
-        walledRecord = points;
-        localStorage.setItem('wormholes.walledRecord', walledRecord);
-      }
 
+    if (points > record) {
+      localStorage.setItem(`wormholes.records.level${currentLevel}`, points);
+      record = points;
       renderRecords();
     }
   }
@@ -948,14 +1008,8 @@
     togglePause();
   }
 
-  function toggleGameMode() {
-    infinityGameMode = !infinityGameMode;
-    setGridGameMode();
-    localStorage.setItem('wormholes.isInfinityGame', infinityGameMode ? 1 : 0);
-    renderRecords();
-  }
-
-  function setGridGameMode() {
+  function setGameMode(isWalled) {
+    infinityGameMode = !isWalled;
     gameWrapper.setAttribute('data-gamemode', infinityGameMode ? 'infinity' : 'walled');
   }
 
@@ -968,6 +1022,10 @@
   function setControlMode() {
     gameWrapper.setAttribute('data-controlmode', relativeControlsMode ? 'relative' : 'absolute');
   }
+
+  function setLevelName() {
+    gameWrapper.querySelector('#level_name').innerText = levelName;
+  }
   
   function handleKeyInput(e) {
     switch (e.key.toLowerCase()) {
@@ -979,11 +1037,11 @@
       case 'esc':
         willReset = true;
         break;
-      case 'i':
-        if (!initialized) toggleGameMode();
-        break;
       case 'u':
         if (!initialized) toggleControlMode();
+        break;
+      case 'l':
+        if (!initialized) changeLevel()
         break;
       case 'arrowup':
       case 'w':
@@ -1086,11 +1144,11 @@
       };
     }
 
-    if (e.target.classList.contains('btn-i')) {
+    if (e.target.classList.contains('btn-l')) {
       eventOptions = {
-        key: 'i',
-        keyCode: 73,
-        which: 73
+        key: 'l',
+        keyCode: 76,
+        which: 76
       };
     }
 
