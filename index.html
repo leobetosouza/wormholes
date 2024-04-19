@@ -560,81 +560,7 @@
 
   window.addEventListener('DOMContentLoaded', prepareGame);
   window.addEventListener('keydown', handleInput);
-
-  window.addEventListener('click', (evt) => {
-    evt.preventDefault();
-    evt.stopPropagation();
-
-    let eventOptions;
-
-    if (evt.target.classList.contains('btn-enter')) {
-      eventOptions = {
-        key: 'Enter',
-        keyCode: 13,
-        which: 13
-      };
-    }
-
-    if (evt.target.classList.contains('btn-esc')) {
-      eventOptions = {
-        key: 'Escape',
-        keyCode: 27,
-        which: 27
-      };
-    }
-
-    if (evt.target.classList.contains('btn-arrowleft')) {
-      eventOptions = {
-        key: 'ArrowLeft',
-        keyCode: 37,
-        which: 37
-      };
-    }
-
-    if (evt.target.classList.contains('btn-arrowright')) {
-      eventOptions = {
-        key: 'ArrowRight',
-        keyCode: 39,
-        which: 39
-      };
-    }
-
-    if (evt.target.classList.contains('btn-arrowup')) {
-      eventOptions = {
-        key: 'ArrowUp',
-        keyCode: 38,
-        which: 38
-      };
-    }
-
-    if (evt.target.classList.contains('btn-arrowdown')) {
-      eventOptions = {
-        key: 'ArrowDown',
-        keyCode: 40,
-        which: 40
-      };
-    }
-
-    if (evt.target.classList.contains('btn-u')) {
-      eventOptions = {
-        key: 'u',
-        keyCode: 85,
-        which: 85
-      };
-    }
-
-    if (evt.target.classList.contains('btn-i')) {
-      eventOptions = {
-        key: 'i',
-        keyCode: 73,
-        which: 73
-      };
-    }
-
-    const customEvent = new KeyboardEvent('keydown', eventOptions); 
-
-    window.dispatchEvent(customEvent);
-  })
+  window.addEventListener('click', handleClick);
 
   const gameWrapper = document.getElementById('wormholes_game');
 
@@ -1099,6 +1025,81 @@
     }
     
     e.preventDefault();
+  }
+
+  function handleClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    let eventOptions;
+
+    if (e.target.classList.contains('btn-enter')) {
+      eventOptions = {
+        key: 'Enter',
+        keyCode: 13,
+        which: 13
+      };
+    }
+
+    if (e.target.classList.contains('btn-esc')) {
+      eventOptions = {
+        key: 'Escape',
+        keyCode: 27,
+        which: 27
+      };
+    }
+
+    if (e.target.classList.contains('btn-arrowleft')) {
+      eventOptions = {
+        key: 'ArrowLeft',
+        keyCode: 37,
+        which: 37
+      };
+    }
+
+    if (e.target.classList.contains('btn-arrowright')) {
+      eventOptions = {
+        key: 'ArrowRight',
+        keyCode: 39,
+        which: 39
+      };
+    }
+
+    if (e.target.classList.contains('btn-arrowup')) {
+      eventOptions = {
+        key: 'ArrowUp',
+        keyCode: 38,
+        which: 38
+      };
+    }
+
+    if (e.target.classList.contains('btn-arrowdown')) {
+      eventOptions = {
+        key: 'ArrowDown',
+        keyCode: 40,
+        which: 40
+      };
+    }
+
+    if (e.target.classList.contains('btn-u')) {
+      eventOptions = {
+        key: 'u',
+        keyCode: 85,
+        which: 85
+      };
+    }
+
+    if (e.target.classList.contains('btn-i')) {
+      eventOptions = {
+        key: 'i',
+        keyCode: 73,
+        which: 73
+      };
+    }
+
+    const customEvent = new KeyboardEvent('keydown', eventOptions); 
+
+    window.dispatchEvent(customEvent);
   }
 
   function isPlaying() {
