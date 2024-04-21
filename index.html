@@ -606,10 +606,12 @@
   
   function resetGame() {
     gameWrapper.setAttribute('data-gamestate', 'ready');
-    direction = 'E';
+
+    const level = levels[currentLevel];
+    direction = level.startDirection;
 
     worm.length = 0;
-    worm.push({ x: 0, y: 0, direction });
+    worm.push({ ...startPosition, direction });
 
     renderPoints();
     
@@ -619,7 +621,6 @@
     foods.length = 0;
 
     nextHead = null;
-    direction = 'E';
     paused = false;
     initialized = false;
     hasGameOver = false;
@@ -931,7 +932,7 @@
           if (axis.y === '+') y += step;
           if (axis.x === '-') x -= step;
           if (axis.y === '-') y -= step;
-        }
+        };
 
         if (length != null) {
           for (let i = 0; i < length; i += step) {
