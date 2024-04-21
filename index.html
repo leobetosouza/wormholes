@@ -507,19 +507,19 @@
       structures: [
         {
             init: { x: Math.floor(BOARD_WIDTH/2), y: 0 },
-            axis: 'y',
+            axis: { y: '+' },
             length: BOARD_HEIGHT - 1,
             step: 1
         },
         {
             init: { y: Math.floor(BOARD_HEIGHT/2), x: 0 },
-            axis: 'x',
+            axis: { x: '+' },
             length: Math.floor(BOARD_WIDTH/2) - 1,
             step: 2
         },
         {
             init: { y: Math.floor(BOARD_HEIGHT/2), x: Math.floor(BOARD_WIDTH/2) + 2 },
-            axis: 'x',
+            axis: { x: '+' },
             length: Math.floor(BOARD_WIDTH/2) - 1,
             step: 2
         }
@@ -927,8 +927,10 @@
         let { x, y } = pos;
         
         for (let i = 0; i < length; i += step) {
-          if (axis === 'x') x += step;
-          if (axis === 'y') y += step;
+          if (axis.x === '+') x += step;
+          if (axis.y === '+') y += step;
+          if (axis.x === '-') x -= step;
+          if (axis.y === '-') y -= step;
           acc.push({ x, y });
         }
         
