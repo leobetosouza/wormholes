@@ -925,13 +925,24 @@
         acc.push(pos);
         
         let { x, y } = pos;
-        
-        for (let i = 0; i < length; i += step) {
+
+        const updatePos = () => {
           if (axis.x === '+') x += step;
           if (axis.y === '+') y += step;
           if (axis.x === '-') x -= step;
           if (axis.y === '-') y -= step;
-          acc.push({ x, y });
+        }
+
+        if (length != null) {
+          for (let i = 0; i < length; i += step) {
+            updatePos();
+            acc.push({ x, y });
+          }
+        } else {
+          do {
+            acc.push({ x, y });
+            updatePos();
+          } while(!isWall({ x, y }) && !isBeyondWall({ x, y }))
         }
         
         return acc;
@@ -1176,6 +1187,10 @@
     return x === -1 || y === -1 || x === BOARD_WIDTH || y === BOARD_HEIGHT;
   }
   
+  function isBeyondWall({ x, y }) {
+    return x < -1 || y < -1 || x > BOARD_WIDTH || y > BOARD_HEIGHT;
+  }
+
   function equals(o1, o2) {
     return o1.x === o2.x && o1.y === o2.y;
   }
