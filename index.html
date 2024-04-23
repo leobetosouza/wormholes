@@ -852,7 +852,12 @@
     const wormhole = wormholes.find((w) => equals(w, head));
 
     if (wormhole) {
-      const { x, y } = wormholes[wormhole.target];
+      const { x, y } = wormholes[
+        wormhole.target === '*'
+          ? getRandomInt(0, wormholes.length-2)
+          : wormhole.target
+      ];
+
       nextHead = { x, y };
     } else
       nextHead = { ...head }
