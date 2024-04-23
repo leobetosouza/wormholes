@@ -554,6 +554,7 @@
   let levelName = null;
   let defaultFoodValue = null;
   let defaultFoodsToPlace = null;
+  let startDirection = null;
   let direction = null;
   let startPosition = null;
   let infinityGameMode = false;
@@ -625,11 +626,7 @@
   function resetGame() {
     gameWrapper.setAttribute('data-gamestate', 'ready');
 
-    const level = levels[currentLevel];
-    direction = level.startDirection;
-
-    worm.length = 0;
-    worm.push({ ...startPosition, direction });
+    resetWorm();
 
     renderPoints();
     
@@ -663,8 +660,9 @@
     levelName = level.name;
     defaultFoodValue = level.defaultFoodValue;
     defaultFoodsToPlace = level.defaultFoodsToPlace;
+
     startPosition = level.startPosition;
-    direction = level.startDirection;
+    startDirection = level.startDirection;
 
     wormholes.length = 0;
     wormholes = [ ...level.wormholes ];
@@ -677,8 +675,8 @@
     
     convertStructures();
 
-    worm.length = 0;
-    worm.push({ ...startPosition, direction });
+    resetWorm();
+
     getRecord();
     renderRecords();
     drawBoard();
@@ -831,6 +829,7 @@
         ], pos)
       );
 
+    
     for (let i = 0; i < defaultFoodsToPlace; i++) {
       validPositions = validPositons
         // food cannot spawn into another food
@@ -910,6 +909,13 @@
     foods.splice(idx, 1);
 
     return true;
+  }
+
+  function resetWorm() {
+    direction = startDirection;
+    
+    worm.length = 0;
+    worm.push({ ...startPosition, direction });
   }
 
   function createPoop(poop) {
