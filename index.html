@@ -795,10 +795,13 @@
   
   function createFood() {
     let validPositons = positions
-      .reduce((acc, arr) => ([ ...acc, ...arr ]), [])
+      .flat()
       .filter(pos =>
         // food cannot spawn on a wall
         !isWall(pos)
+        &&
+        // food cannot spawn with 3 or more structures/walls arround it
+        !isSurronded(pos)
         &&
         // food cannot spawn
         // * in front of the worm
@@ -1190,6 +1193,20 @@
   
   function isBeyondWall({ x, y }) {
     return x < -1 || y < -1 || x > BOARD_WIDTH || y > BOARD_HEIGHT;
+  }
+
+  function isSurronded({ x, y }) {
+    const cardinals = [
+      { x: x+1, y },
+      { x, y: y+1 },
+      { x: x-1, y },
+      { x, y: y-1 }
+    ];
+
+    const numberWalls = cardinals
+      .filter(pos => isWall(pos) || includes(structuresPositions, pos)).length; 
+
+    return numberWalls > 2;
   }
 
   function equals(o1, o2) {
