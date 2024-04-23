@@ -545,6 +545,95 @@
         { x: 2, y: 2, target: 3, group: 1 },
         { x: BOARD_WIDTH-3, y: BOARD_HEIGHT-3, target: 2, group: 1 }
       ],
+    },
+    {
+      name: 'Level 3',
+      isWalled: true,
+      defaultFoodValue: 2,
+      defaultFoodsToPlace: 3,
+      startPosition: { x: Math.floor(BOARD_WIDTH/2), y: Math.floor(BOARD_HEIGHT/2) },
+      startDirection: 'N',
+      structures: [
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2) - 6, y: Math.floor(BOARD_HEIGHT/2) - 6 },
+            axis: { x: '-', y: '-' },
+            length: null,
+            step: 1
+        },
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2) + 6, y: Math.floor(BOARD_HEIGHT/2) - 6 },
+            axis: { x: '+', y: '-' },
+            length: null,
+            step: 1
+        },
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2) + 6, y: Math.floor(BOARD_HEIGHT/2) + 6 },
+            axis: { x: '+', y: '+' },
+            length: null,
+            step: 1
+        },
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2) - 6, y: Math.floor(BOARD_HEIGHT/2) + 6 },
+            axis: { x: '-', y: '+' },
+            length: null,
+            step: 1
+        }
+      ],
+      wormholes: [
+        { x: Math.floor(BOARD_WIDTH/2) - 5, y: Math.floor(BOARD_HEIGHT/2) - 10, target: 7, group: 0 },
+        { x: Math.floor(BOARD_WIDTH/2) + 5, y: Math.floor(BOARD_HEIGHT/2) - 10, target: 2, group: 1 },
+        { x: Math.floor(BOARD_WIDTH/2) + 11, y: Math.floor(BOARD_HEIGHT/2) - 5, target: 1, group: 1 },
+        { x: Math.floor(BOARD_WIDTH/2) + 11, y: Math.floor(BOARD_HEIGHT/2) + 5, target: 4, group: 2 },
+        { x: Math.floor(BOARD_WIDTH/2) + 5, y: Math.floor(BOARD_HEIGHT/2) + 10, target: 3, group: 2 },
+        { x: Math.floor(BOARD_WIDTH/2) - 5, y: Math.floor(BOARD_HEIGHT/2) + 10, target: 6, group: 3 },
+        { x: Math.floor(BOARD_WIDTH/2) - 11, y: Math.floor(BOARD_HEIGHT/2) + 5, target: 5, group: 3 },
+        { x: Math.floor(BOARD_WIDTH/2) - 11, y: Math.floor(BOARD_HEIGHT/2) - 5, target: 0, group: 0 },
+      ],
+    },
+    {
+      name: 'Level 4',
+      isWalled: true,
+      defaultFoodValue: 2,
+      defaultFoodsToPlace: 3,
+      startPosition: { x: Math.floor(BOARD_WIDTH/2), y: BOARD_HEIGHT-1 },
+      startDirection: 'N',
+      structures: [
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2) - 1, y: Math.floor(BOARD_HEIGHT/2) - 1 },
+            axis: { x: '-', y: '-' },
+            length: null,
+            step: 1
+        },
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2) + 1, y: Math.floor(BOARD_HEIGHT/2) - 1 },
+            axis: { x: '+', y: '-' },
+            length: null,
+            step: 1
+        },
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2) + 1, y: Math.floor(BOARD_HEIGHT/2) + 1 },
+            axis: { x: '+', y: '+' },
+            length: null,
+            step: 1
+        },
+        {
+            init: { x: Math.floor(BOARD_WIDTH/2) - 1, y: Math.floor(BOARD_HEIGHT/2) + 1 },
+            axis: { x: '-', y: '+' },
+            length: null,
+            step: 1
+        }
+      ],
+      wormholes: [
+        { x: Math.floor(BOARD_WIDTH/2) - 5, y: Math.floor(BOARD_HEIGHT/2) - 10, target: 7, group: 0 },
+        { x: Math.floor(BOARD_WIDTH/2) + 5, y: Math.floor(BOARD_HEIGHT/2) - 10, target: 2, group: 1 },
+        { x: Math.floor(BOARD_WIDTH/2) + 11, y: Math.floor(BOARD_HEIGHT/2) - 5, target: 1, group: 1 },
+        { x: Math.floor(BOARD_WIDTH/2) + 11, y: Math.floor(BOARD_HEIGHT/2) + 5, target: 4, group: 2 },
+        { x: Math.floor(BOARD_WIDTH/2) + 5, y: Math.floor(BOARD_HEIGHT/2) + 10, target: 3, group: 2 },
+        { x: Math.floor(BOARD_WIDTH/2) - 5, y: Math.floor(BOARD_HEIGHT/2) + 10, target: 6, group: 3 },
+        { x: Math.floor(BOARD_WIDTH/2) - 11, y: Math.floor(BOARD_HEIGHT/2) + 5, target: 5, group: 3 },
+        { x: Math.floor(BOARD_WIDTH/2) - 11, y: Math.floor(BOARD_HEIGHT/2) - 5, target: 0, group: 0 },
+        { x: Math.floor(BOARD_WIDTH/2), y: Math.floor(BOARD_HEIGHT/2), target: '*', group: 4 }    
+      ],
     }
   ];
 
