@@ -468,7 +468,7 @@
   const BOARD_WIDTH = 37;
   const BOARD_HEIGHT = 29;
 
-  // This creates a 2x2 matrix 
+  // This creates a 2 dimensions matrix 
   // from { x: -1, y: -1 }
   // to { x: BOARD_WIDTH+1, y: BOARD_HEIGHT+1 }
   // These are all the positions we need to build the game grid
@@ -521,22 +521,22 @@
       startDirection: 'E',
       structures: [
         {
-            init: { x: Math.floor(BOARD_WIDTH/2), y: 0 },
-            axis: { y: '+' },
-            length: BOARD_HEIGHT - 1,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2), y: 0 },
+          axis: { y: '+' },
+          length: BOARD_HEIGHT - 1,
+          step: 1
+      },
+        {
+          init: { y: Math.floor(BOARD_HEIGHT/2), x: 0 },
+          axis: { x: '+' },
+          length: Math.floor(BOARD_WIDTH/2) - 1,
+          step: 2
         },
         {
-            init: { y: Math.floor(BOARD_HEIGHT/2), x: 0 },
-            axis: { x: '+' },
-            length: Math.floor(BOARD_WIDTH/2) - 1,
-            step: 2
-        },
-        {
-            init: { y: Math.floor(BOARD_HEIGHT/2), x: Math.floor(BOARD_WIDTH/2) + 2 },
-            axis: { x: '+' },
-            length: Math.floor(BOARD_WIDTH/2) - 1,
-            step: 2
+          init: { y: Math.floor(BOARD_HEIGHT/2), x: Math.floor(BOARD_WIDTH/2) + 2 },
+          axis: { x: '+' },
+          length: Math.floor(BOARD_WIDTH/2) - 1,
+          step: 2
         }
       ],
       wormholes: [
@@ -555,28 +555,28 @@
       startDirection: 'N',
       structures: [
         {
-            init: { x: Math.floor(BOARD_WIDTH/2) - 6, y: Math.floor(BOARD_HEIGHT/2) - 6 },
-            axis: { x: '-', y: '-' },
-            length: null,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2) - 6, y: Math.floor(BOARD_HEIGHT/2) - 6 },
+          axis: { x: '-', y: '-' },
+          length: null,
+          step: 1
         },
         {
-            init: { x: Math.floor(BOARD_WIDTH/2) + 6, y: Math.floor(BOARD_HEIGHT/2) - 6 },
-            axis: { x: '+', y: '-' },
-            length: null,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2) + 6, y: Math.floor(BOARD_HEIGHT/2) - 6 },
+          axis: { x: '+', y: '-' },
+          length: null,
+          step: 1
         },
         {
-            init: { x: Math.floor(BOARD_WIDTH/2) + 6, y: Math.floor(BOARD_HEIGHT/2) + 6 },
-            axis: { x: '+', y: '+' },
-            length: null,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2) + 6, y: Math.floor(BOARD_HEIGHT/2) + 6 },
+          axis: { x: '+', y: '+' },
+          length: null,
+          step: 1
         },
         {
-            init: { x: Math.floor(BOARD_WIDTH/2) - 6, y: Math.floor(BOARD_HEIGHT/2) + 6 },
-            axis: { x: '-', y: '+' },
-            length: null,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2) - 6, y: Math.floor(BOARD_HEIGHT/2) + 6 },
+          axis: { x: '-', y: '+' },
+          length: null,
+          step: 1
         }
       ],
       wormholes: [
@@ -594,33 +594,33 @@
       name: 'Level 4',
       isWalled: true,
       defaultFoodValue: 2,
-      defaultFoodsToPlace: 3,
+      defaultFoodsToPlace: 5,
       startPosition: { x: Math.floor(BOARD_WIDTH/2), y: BOARD_HEIGHT-1 },
       startDirection: 'N',
       structures: [
         {
-            init: { x: Math.floor(BOARD_WIDTH/2) - 1, y: Math.floor(BOARD_HEIGHT/2) - 1 },
-            axis: { x: '-', y: '-' },
-            length: null,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2) - 1, y: Math.floor(BOARD_HEIGHT/2) - 1 },
+          axis: { x: '-', y: '-' },
+          length: null,
+          step: 1
         },
         {
-            init: { x: Math.floor(BOARD_WIDTH/2) + 1, y: Math.floor(BOARD_HEIGHT/2) - 1 },
-            axis: { x: '+', y: '-' },
-            length: null,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2) + 1, y: Math.floor(BOARD_HEIGHT/2) - 1 },
+          axis: { x: '+', y: '-' },
+          length: null,
+          step: 1
         },
         {
-            init: { x: Math.floor(BOARD_WIDTH/2) + 1, y: Math.floor(BOARD_HEIGHT/2) + 1 },
-            axis: { x: '+', y: '+' },
-            length: null,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2) + 1, y: Math.floor(BOARD_HEIGHT/2) + 1 },
+          axis: { x: '+', y: '+' },
+          length: null,
+          step: 1
         },
         {
-            init: { x: Math.floor(BOARD_WIDTH/2) - 1, y: Math.floor(BOARD_HEIGHT/2) + 1 },
-            axis: { x: '-', y: '+' },
-            length: null,
-            step: 1
+          init: { x: Math.floor(BOARD_WIDTH/2) - 1, y: Math.floor(BOARD_HEIGHT/2) + 1 },
+          axis: { x: '-', y: '+' },
+          length: null,
+          step: 1
         }
       ],
       wormholes: [
@@ -899,7 +899,7 @@
   }
   
   function createFood() {
-    let validPositons = positions
+    let validPositions = positions
       .flat()
       .filter(pos =>
         // food cannot spawn on a wall
@@ -920,13 +920,13 @@
 
     
     for (let i = 0; i < defaultFoodsToPlace; i++) {
-      validPositions = validPositons
+      validPositions = validPositions
         // food cannot spawn into another food
-        .filter(pos => !includes(foods, pos))
+        .filter(pos => !includes(foods, pos));
 
-      const food = validPositons
+      const food = validPositions
         .at(
-          getRandomInt(0, validPositons.length-1)
+          getRandomInt(0, validPositions.length-1)
         );
       
       food.value = defaultFoodValue;
