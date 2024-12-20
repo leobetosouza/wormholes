@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
+
   <title>Wormholes</title>
   <style>
     body {
@@ -63,18 +63,18 @@
           color: lightgreen;
         }
       }
-    
+
       #board {
         section {
           padding: 0 0 1px 1px;
           border: 1px solid white;
-          
+
           > div {
             display: flex;
             justify-content: center;
           }
         }
-      
+
         span {
           display: block;
           border: 1px solid white;
@@ -87,7 +87,7 @@
         .wall {
           background-color: white;
         }
-      
+
         .worm,
         .food {
           border: 1px solid black;
@@ -102,8 +102,8 @@
           &.vanishing {
             background-size: 70% 70%;
           }
-        } 
-               
+        }
+
         .food {
           background: red;
           border-radius: 50%;
@@ -115,27 +115,27 @@
 
         .wormhole {
           outline-style: groove;
-          
+
           &.wormhole-color-blueviolet {
             background-color: blueviolet;
           }
-          
+
           &.wormhole-color-crimson {
             background-color: crimson;
           }
-          
+
           &.wormhole-color-aqua {
             background-color: aqua;
           }
-          
+
           &.wormhole-color-lime {
             background-color: lime;
           }
-          
+
           &.wormhole-color-darkorange {
             background-color: darkorange;
           }
-          
+
           &.wormhole-color-deeppink {
             background-color: blueviolet;
           }
@@ -170,7 +170,7 @@
               background-size: 100% 50%;
               background-position: top, bottom;
             }
-            
+
             &.dir-w {
               background-image:
                 linear-gradient(to right top, red 50%, transparent 0),
@@ -178,7 +178,7 @@
               background-size: 100% 50%;
               background-position: top, bottom;
             }
-            
+
             &.dir-n {
               background-image:
                 linear-gradient(to left bottom, red 50%, transparent 0),
@@ -186,7 +186,7 @@
               background-size: 50% 100%;
               background-position: left, right;
             }
-            
+
             &.dir-s {
               background-image:
                 linear-gradient(to bottom right, transparent 50%, red 0),
@@ -206,7 +206,7 @@
               background-size: 100% 50%;
               background-position: top, bottom;
             }
-            
+
             &.dir-e {
               background-image:
                 linear-gradient(to right top, lightgreen 50%, transparent 0),
@@ -214,7 +214,7 @@
               background-size: 100% 50%;
               background-position: top, bottom;
             }
-            
+
             &.dir-s {
               background-image:
                 linear-gradient(to left bottom, lightgreen 50%, transparent 0),
@@ -222,7 +222,7 @@
               background-size: 50% 100%;
               background-position: left, right;
             }
-            
+
             &.dir-n {
               background-image:
                 linear-gradient(to bottom right, transparent 50%, lightgreen 0),
@@ -319,7 +319,7 @@
         .pre-game-controls {
           display: none;
         }
-        
+
         .reset-control {
           display: initial;
         }
@@ -339,7 +339,7 @@
         .pre-game-controls {
           display: none;
         }
-        
+
         .reset-control {
           display: initial;
         }
@@ -359,7 +359,7 @@
         .pre-game-controls {
           display: none;
         }
-        
+
         .reset-control {
           display: initial;
         }
@@ -459,16 +459,19 @@
   </main>
 </body>
 <script>
-  let relativeControlsMode = Boolean(+localStorage.getItem('wormholes.isRelativeControls'));
+  'use strict';
+
+  let relativeControlsMode =
+    Boolean(+localStorage.getItem('wormholes.isRelativeControls'));
   let currentLevel = +localStorage.getItem('wormholes.level');
 
   const board = document.createElement('section');
-  
+
   const REDRAW_TIME = 200;
   const BOARD_WIDTH = 37;
   const BOARD_HEIGHT = 29;
 
-  // This creates a 2 dimensions matrix 
+  // This creates a 2 dimensions matrix
   // from { x: -1, y: -1 }
   // to { x: BOARD_WIDTH+1, y: BOARD_HEIGHT+1 }
   // These are all the positions we need to build the game grid
@@ -480,6 +483,9 @@
       (_, x) => ({ x: x - 1, y: y - 1 })
     )
   );
+
+  let virtualDOM = {};
+  let nextVirtualDOM = null;
 
   const levels = [
     {
@@ -632,7 +638,7 @@
         { x: Math.floor(BOARD_WIDTH/2) - 5, y: Math.floor(BOARD_HEIGHT/2) + 10, target: 6, group: 3 },
         { x: Math.floor(BOARD_WIDTH/2) - 11, y: Math.floor(BOARD_HEIGHT/2) + 5, target: 5, group: 3 },
         { x: Math.floor(BOARD_WIDTH/2) - 11, y: Math.floor(BOARD_HEIGHT/2) - 5, target: 0, group: 0 },
-        { x: Math.floor(BOARD_WIDTH/2), y: Math.floor(BOARD_HEIGHT/2), target: '*', group: 4 }    
+        { x: Math.floor(BOARD_WIDTH/2), y: Math.floor(BOARD_HEIGHT/2), target: '*', group: 4 }
       ],
     }
   ];
@@ -711,14 +717,14 @@
   const pointsCounters = gameWrapper.getElementsByClassName('points');
   const recordCounters = gameWrapper.getElementsByClassName('record');
   const recordWrappers = gameWrapper.getElementsByClassName('record-wrapper');
-  
+
   function resetGame() {
     gameWrapper.setAttribute('data-gamestate', 'ready');
 
     resetWorm();
 
     renderPoints();
-    
+
     movementBuffer.length = 0;
     poops.length = 0;
     obstacles.length = 0;
@@ -729,15 +735,16 @@
     initialized = false;
     hasGameOver = false;
     willReset = false;
-    
+
     drawBoard();
   }
-  
+
   function prepareGame() {
     document.getElementById('board').appendChild(board);
-    
+
     setControlMode();
-    
+
+    createDOMs();
     prepareLevel();
   }
 
@@ -761,23 +768,24 @@
 
     setLevelName();
     setGameMode(level.isWalled);
-    
+
     convertStructures();
 
     resetWorm();
 
+    drawBoard();
+
     getRecord();
     renderRecords();
-    drawBoard();
   }
 
-  
+
   function initGame() {
     initialized = true;
     gameWrapper.setAttribute('data-gamestate', 'started');
     gameLoop();
   }
-  
+
   async function gameLoop() {
     do {
       if (paused) {
@@ -785,19 +793,17 @@
         await delay(REDRAW_TIME/2);
         continue;
       }
-      
+
       renderPoints();
 
       createNextHead();
-    
+
       if (!foods.length) createFood();
 
       drawBoard();
-      
       moveWorm();
-
       cleanPoop();
-      
+
       if (checkGameOver()) {
         gameOver();
         break;
@@ -809,95 +815,131 @@
       }
 
       await delay(REDRAW_TIME);
-      
+
     } while(true);
   }
-  
-  function drawBoard() {
+
+  function createDOMs() {
     board.innerHTML = '';
-    
+
     const head = worm[0];
     const tail = worm[worm.length - 1];
-
-    // We will loop through the positions matrix and generate
-    // each element of the HTML grid we will use as game canvas
-    // each line of the grid will be a <div>
-    // each element will be an <span>
-    // and each <span> will have the CSS classes that represents
-    // what features on that position
 
     const grid = positions.reduce((frag, lines) => {
       const gridLines = lines.reduce((line, pos) => {
         const cell = document.createElement('span');
         const cellClasses = cell.classList;
-        
+
         cell.innerHTML = '&nbsp;';
-        
+
         const { x, y } = pos;
 
         cell.setAttribute('data-x', x);
-        cell.setAttribute('data-y', y)
+        cell.setAttribute('data-y', y);
 
-        let bodySegment, poop, wormhole;
+        const id = createCellId(pos);
 
-        // We do not need to use the comma operator on this condition,
-        // but I keep it for consistence with the next conditions.
+        cell.id = id;
+        cell.className = '';
+        virtualDOM[id] = { state: '' };
 
-        if (bodySegment = worm.find(seg => equals(seg, pos)), bodySegment) {
-          cellClasses.add('worm');
-          
-          if (equals(head, bodySegment))
-            cellClasses.add('head', `dir-${ head.direction.toLowerCase() }`);
-          else if (equals(tail, bodySegment)) 
-            cellClasses.add(
-              'tail',
-              `dir-${ oppositeDirection[tail.direction].toLowerCase() }`
-            );
-          else if (bodySegment.hasFood)
-            cellClasses.add('food-eaten');
-          else
-            cellClasses.add(`dir-${ bodySegment.direction.toLowerCase() }`); 
-        }
-
-        // A cell can be a body segment AND other stuff,
-        // but NOT more than one of these stuffs at the same time,
-        // "else if" and the commma operator is used to reduce
-        // array searchs inside of this loop for performance sake.
-
-        if (includes(foods, pos)) 
-          cellClasses.add('food');
-        else if (isWall(pos))
-          cellClasses.add('wall');
-        else if (includes(structuresPositions, pos))
-          cellClasses.add('struct');
-        else if (includes(obstacles, pos))
-          cellClasses.add('obstacle');
-        else if (wormhole = wormholes.find(w => equals(w, pos)), wormhole)
-          cellClasses.add(
-            'wormhole',
-            `wormhole-color-${wormholesColors[wormhole.group]}`
-          );
-        else if (poop = poops.find(p => equals(p, pos)), poop) {
-          cellClasses.add('poop');
-          
-          if (poop.timeToVanish < REDRAW_TIME * 6) {
-            cellClasses.add('vanishing');
-          } 
-        }
-        
         line.appendChild(cell);
 
         return line;
       }, document.createElement('div'));
-      
+
       frag.appendChild(gridLines);
-      
+
       return frag;
     }, document.createDocumentFragment());
-    
+
     board.appendChild(grid);
   }
-  
+
+  function createNextVDOM() {
+    nextVirtualDOM = positions.flat().reduce((vdom, pos) => {
+      const id = createCellId(pos);
+
+      vdom[id] = { state: createCellState(pos) };
+
+      return vdom;
+    }, {});
+  }
+
+  function createCellId({ x, y }) {
+    return `cell-${x}-${y}`;
+  }
+
+  function createCellState(pos) {
+    const head = worm[0];
+    const tail = worm[worm.length - 1];
+    const { x, y } = pos;
+    const state = [];
+
+    let bodySegment, poop, wormhole;
+
+    // We do not need to use the comma operator on this condition,
+    // but I keep it for consistence with the next conditions.
+
+    if (bodySegment = worm.find(seg => equals(seg, pos)), bodySegment) {
+      state.push('worm');
+
+      if (equals(head, bodySegment))
+      state.push('head', `dir-${ head.direction.toLowerCase() }`);
+      else if (equals(tail, bodySegment))
+        state.push(
+          'tail',
+          `dir-${ oppositeDirection[tail.direction].toLowerCase() }`
+        );
+      else if (bodySegment.hasFood)
+        state.push('food-eaten');
+      else
+        state.push(`dir-${ bodySegment.direction.toLowerCase() }`);
+    }
+
+    // A cell can be a body segment AND other stuff,
+    // but NOT more than one of these stuffs at the same time,
+    // "else if" and the commma operator is used to reduce
+    // array searchs inside of this loop for performance sake.
+
+    if (includes(foods, pos))
+      state.push('food');
+    else if (isWall(pos))
+      state.push('wall');
+    else if (includes(structuresPositions, pos))
+      state.push('struct');
+    else if (includes(obstacles, pos))
+      state.push('obstacle');
+    else if (wormhole = wormholes.find(w => equals(w, pos)), wormhole)
+      state.push(
+        'wormhole',
+        `wormhole-color-${wormholesColors[wormhole.group]}`
+      );
+    else if (poop = poops.find(p => equals(p, pos)), poop) {
+      state.push('poop');
+
+      if (poop.timeToVanish < REDRAW_TIME * 6) {
+        state.push('vanishing');
+      }
+    }
+
+    return state.join(' ');
+  }
+
+  function updateDOM() {
+    for (const [ id, { state } ] of Object.entries(nextVirtualDOM))
+      if (virtualDOM[id].state !== state)
+        document.getElementById(id).className = state;
+
+    virtualDOM = nextVirtualDOM;
+    nextVirtualDOM = null;
+  }
+
+  function drawBoard() {
+    createNextVDOM();
+    updateDOM();
+  }
+
   function createFood() {
     let validPositions = positions
       .flat()
@@ -918,7 +960,7 @@
         ], pos)
       );
 
-    
+
     for (let i = 0; i < defaultFoodsToPlace; i++) {
       validPositions = validPositions
         // food cannot spawn into another food
@@ -928,7 +970,7 @@
         .at(
           getRandomInt(0, validPositions.length-1)
         );
-      
+
       food.value = defaultFoodValue;
       removePoop(food);
 
@@ -950,9 +992,9 @@
       nextHead = { x, y };
     } else
       nextHead = { ...head }
-    
+
     nextHead.hasFood = false;
-    
+
     let nextDirection = movementBuffer.length ? movementBuffer.shift() : null;
 
     if (nextDirection === oppositeDirection[direction])
@@ -978,7 +1020,7 @@
       if (nextHead.y === BOARD_HEIGHT) nextHead.y = 0;
     }
   }
-  
+
   function moveWorm() {
     removePoop(nextHead);
 
@@ -989,9 +1031,9 @@
     else
       createPoop(worm.pop());
 
-    worm.unshift(nextHead);    
+    worm.unshift(nextHead);
   }
-  
+
   function eatFood(pos) {
     const idx = foods.findIndex((f) => equals(f, pos));
 
@@ -1007,15 +1049,18 @@
 
   function resetWorm() {
     direction = startDirection;
-    
+
     worm.length = 0;
     worm.push({ ...startPosition, direction });
   }
 
   function createPoop(poop) {
     if (worm.length > 1 && poop.hasFood) {
-      const { x, y } = poop; 
-      poops.push({ x, y, timeToVanish: REDRAW_TIME * Math.min(BOARD_WIDTH, BOARD_HEIGHT) * 5 });
+      const { x, y } = poop;
+      poops.push({
+        x, y,
+        timeToVanish: REDRAW_TIME * Math.min(BOARD_WIDTH, BOARD_HEIGHT) * 5
+      });
     }
   }
 
@@ -1025,7 +1070,7 @@
 
     for (const poop of poops) {
       poop.timeToVanish -= REDRAW_TIME;
-      
+
       if (!poop.timeToVanish) {
         removePoop(poop);
         obstacles.push(poop);
@@ -1035,7 +1080,7 @@
 
   function removePoop(pos) {
     const idx = poops.findIndex((c) => equals(c, pos));
-    
+
     if (idx > -1) poops.splice(idx, 1);
   }
 
@@ -1043,9 +1088,9 @@
     structuresPositions = structures
       .reduce((acc, { init, axis, length, step = 1 }) => {
         const pos = { ...init };
-        
+
         acc.push(pos);
-        
+
         let { x, y } = pos;
 
         const updatePos = () => {
@@ -1066,11 +1111,11 @@
             updatePos();
           } while(!isWall({ x, y }) && !isBeyondWall({ x, y }))
         }
-        
+
         return acc;
       }, []);
   }
-  
+
   function checkGameOver() {
     const head = worm[0];
 
@@ -1085,7 +1130,7 @@
       ? currentLevel + 1
       : 0
       ;
-    
+
     localStorage.setItem(`wormholes.level`, currentLevel);
     prepareLevel();
   }
@@ -1101,9 +1146,10 @@
   }
 
   function getRecord() {
-    record = +localStorage.getItem(`wormholes.records.level${currentLevel}`) || 0;    
+    record = +localStorage
+      .getItem(`wormholes.records.level${currentLevel}`) || 0;
   }
-  
+
   function renderRecords() {
     for (const counter of recordCounters) {
       counter.innerText = record;
@@ -1128,40 +1174,46 @@
     paused = !paused;
     gameWrapper.setAttribute('data-gamestate', paused ? 'paused' : 'started');
   }
-  
+
   function handlePlayPause() {
     if (hasGameOver) {
       resetGame();
       return;
     }
-    
+
     if (!initialized) {
       initGame();
       return;
     }
-    
+
     togglePause();
   }
 
   function setGameMode(isWalled) {
     infinityGameMode = !isWalled;
-    gameWrapper.setAttribute('data-gamemode', infinityGameMode ? 'infinity' : 'walled');
+    gameWrapper
+      .setAttribute('data-gamemode', infinityGameMode ? 'infinity' : 'walled');
   }
 
   function toggleControlMode() {
     relativeControlsMode = !relativeControlsMode;
     setControlMode();
-    localStorage.setItem('wormholes.isRelativeControls', relativeControlsMode ? 1 : 0);
+    localStorage
+      .setItem('wormholes.isRelativeControls', relativeControlsMode ? 1 : 0);
   }
 
   function setControlMode() {
-    gameWrapper.setAttribute('data-controlmode', relativeControlsMode ? 'relative' : 'absolute');
+    gameWrapper
+      .setAttribute(
+        'data-controlmode',
+        relativeControlsMode ? 'relative' : 'absolute'
+      );
   }
 
   function setLevelName() {
     gameWrapper.querySelector('#level_name').innerText = levelName;
   }
-  
+
   function handleKeyInput(e) {
     switch (e.key.toLowerCase()) {
       case 'enter':
@@ -1213,7 +1265,7 @@
       default:
         return;
     }
-    
+
     e.preventDefault();
   }
 
@@ -1287,7 +1339,7 @@
       };
     }
 
-    const customEvent = new KeyboardEvent('keydown', eventOptions); 
+    const customEvent = new KeyboardEvent('keydown', eventOptions);
 
     window.dispatchEvent(customEvent);
   }
@@ -1295,7 +1347,7 @@
   function isPlaying() {
     return initialized && !paused && !hasGameOver;
   }
-  
+
   function gameOver() {
     hasGameOver = true;
 
@@ -1308,7 +1360,7 @@
   function isWall({ x, y }) {
     return x === -1 || y === -1 || x === BOARD_WIDTH || y === BOARD_HEIGHT;
   }
-  
+
   function isBeyondWall({ x, y }) {
     return x < -1 || y < -1 || x > BOARD_WIDTH || y > BOARD_HEIGHT;
   }
@@ -1322,7 +1374,10 @@
     ];
 
     const numberWalls = cardinals
-      .filter(pos => isWall(pos) || includes(structuresPositions, pos)).length; 
+      .filter(pos =>
+        isWall(pos) || includes(structuresPositions, pos)
+      )
+      .length;
 
     return numberWalls > 2;
   }
@@ -1330,11 +1385,11 @@
   function equals(o1, o2) {
     return o1.x === o2.x && o1.y === o2.y;
   }
-  
+
   function includes(arr, obj) {
     return arr.findIndex((c) => equals(obj, c)) !== -1;
   }
-  
+
   function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
