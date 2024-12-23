@@ -105,8 +105,21 @@
         }
 
         .food {
-          background: red;
           border-radius: 50%;
+          border: 1px solid white;
+
+          &.food-color-red {
+            background: red;
+          }
+          &.food-color-blue {
+            background: blue;
+          }
+          &.food-color-purple {
+            background: purple;
+          }
+          &.food-color-green {
+            background: green;
+          }
         }
 
         .obstacle, .struct {
@@ -134,10 +147,6 @@
 
           &.wormhole-color-darkorange {
             background-color: darkorange;
-          }
-
-          &.wormhole-color-deeppink {
-            background-color: blueviolet;
           }
 
           &.wormhole-color-deeppink {
@@ -467,7 +476,9 @@
 
   const board = document.createElement('section');
 
-  const REDRAW_TIME = 200;
+  const oneSecond = 1000;
+  const REDRAW_TIME = oneSecond / 60; // let's try 60 FPS, right?
+  const POOP_VANISH_TIME = oneSecond * 20;
   const BOARD_WIDTH = 37;
   const BOARD_HEIGHT = 29;
 
@@ -487,6 +498,8 @@
   let virtualDOM = {};
   let nextVirtualDOM = null;
 
+  let framesCount = 0;
+
   const levels = [
     {
       name: 'Level 0',
@@ -495,6 +508,7 @@
       defaultFoodsToPlace: 3,
       startPosition: { x: 0, y: 0 },
       startDirection: 'E',
+      startWormVelocity: oneSecond/100,
       structures: [],
       wormholes: [
         { x: BOARD_WIDTH-3, y: 2, target: 1, group: 0 },
@@ -510,6 +524,7 @@
       defaultFoodsToPlace: 3,
       startPosition: { x: 0, y: 0 },
       startDirection: 'E',
+      startWormVelocity: oneSecond/100,
       structures: [],
       wormholes: [
         { x: BOARD_WIDTH-3, y: 2, target: 1, group: 0 },
@@ -525,6 +540,7 @@
       defaultFoodsToPlace: 3,
       startPosition: { x: 0, y: 0 },
       startDirection: 'E',
+      startWormVelocity: oneSecond/100,
       structures: [
         {
           init: { x: Math.floor(BOARD_WIDTH/2), y: 0 },
@@ -559,6 +575,7 @@
       defaultFoodsToPlace: 3,
       startPosition: { x: Math.floor(BOARD_WIDTH/2), y: Math.floor(BOARD_HEIGHT/2) },
       startDirection: 'N',
+      startWormVelocity: oneSecond/100,
       structures: [
         {
           init: { x: Math.floor(BOARD_WIDTH/2) - 6, y: Math.floor(BOARD_HEIGHT/2) - 6 },
@@ -603,6 +620,7 @@
       defaultFoodsToPlace: 5,
       startPosition: { x: Math.floor(BOARD_WIDTH/2), y: BOARD_HEIGHT-1 },
       startDirection: 'N',
+      startWormVelocity: oneSecond/100,
       structures: [
         {
           init: { x: Math.floor(BOARD_WIDTH/2) - 1, y: Math.floor(BOARD_HEIGHT/2) - 1 },
@@ -650,7 +668,9 @@
   let defaultFoodValue = null;
   let defaultFoodsToPlace = null;
   let startDirection = null;
+  let startWormVelocity = null;
   let direction = null;
+  let wormVelocity = null;
   let startPosition = null;
   let infinityGameMode = false;
   const worm = [];
@@ -658,6 +678,36 @@
   const movementBuffer = [];
   const poops = [];
   const obstacles = [];
+
+  const foodTypes = [
+    {
+      color: 'red',
+      timeValue: 0,
+      weight: 4
+    },
+    {
+      color: 'blue',
+      timeValue: 1,
+      weight: 1
+    },
+    {
+      color: 'purple',
+      timeValue: -.5,
+      weight: 3
+    },
+    {
+      color: 'green',
+      timeValue: -1,
+      weight: 2
+    }
+  ];
+
+  const foodSamples = shuffle(foodTypes.reduce((acc, { color, timeValue, weight }) => {
+    for (let i = 0; i < weight; i++)
+      acc.push({ color, timeValue});
+
+    return acc;
+  }, []));
 
   let wormholes = [];
 
@@ -759,6 +809,7 @@
 
     startPosition = level.startPosition;
     startDirection = level.startDirection;
+    startWormVelocity = level.startWormVelocity;
 
     wormholes.length = 0;
     wormholes = [ ...level.wormholes ];
@@ -796,12 +847,16 @@
 
       renderPoints();
 
-      createNextHead();
+      checkMovement(() => {
+        createNextHead();
 
-      if (!foods.length) createFood();
+        if (!foods.length) createFood();
+      });
 
       drawBoard();
-      moveWorm();
+
+      checkMovement(moveWorm);
+
       cleanPoop();
 
       if (checkGameOver()) {
@@ -814,6 +869,8 @@
         break;
       }
 
+      framesCount++;
+
       await delay(REDRAW_TIME);
 
     } while(true);
@@ -822,8 +879,8 @@
   function createDOMs() {
     board.innerHTML = '';
 
-    const head = worm[0];
-    const tail = worm[worm.length - 1];
+    // const head = worm[0];
+    // const tail = worm[worm.length - 1];
 
     const grid = positions.reduce((frag, lines) => {
       const gridLines = lines.reduce((line, pos) => {
@@ -876,7 +933,7 @@
     const { x, y } = pos;
     const state = [];
 
-    let bodySegment, poop, wormhole;
+    let bodySegment, food, poop, wormhole;
 
     // We do not need to use the comma operator on this condition,
     // but I keep it for consistence with the next conditions.
@@ -902,8 +959,11 @@
     // "else if" and the commma operator is used to reduce
     // array searchs inside of this loop for performance sake.
 
-    if (includes(foods, pos))
-      state.push('food');
+    if (food = foods.find(f => equals(f, pos)), food)
+      state.push(
+        'food',
+        `food-color-${food.color}`
+      );
     else if (isWall(pos))
       state.push('wall');
     else if (includes(structuresPositions, pos))
@@ -918,7 +978,7 @@
     else if (poop = poops.find(p => equals(p, pos)), poop) {
       state.push('poop');
 
-      if (poop.timeToVanish < REDRAW_TIME * 6) {
+      if (poop.timeToVanish < POOP_VANISH_TIME/3) {
         state.push('vanishing');
       }
     }
@@ -971,10 +1031,14 @@
           getRandomInt(0, validPositions.length-1)
         );
 
-      food.value = defaultFoodValue;
+      const foodSample = foodSamples
+          .at(
+            getRandomInt(0, foodSamples.length-1)
+          );
+
       removePoop(food);
 
-      foods.push(food);
+      foods.push({ ...food, ...foodSample, value: defaultFoodValue });
     }
   }
 
@@ -1044,11 +1108,14 @@
     eatingCount += food.value;
     foods.splice(idx, 1);
 
+    increaseWormVelocity(food.timeValue);
+
     return true;
   }
 
   function resetWorm() {
     direction = startDirection;
+    wormVelocity = startWormVelocity;
 
     worm.length = 0;
     worm.push({ ...startPosition, direction });
@@ -1059,7 +1126,7 @@
       const { x, y } = poop;
       poops.push({
         x, y,
-        timeToVanish: REDRAW_TIME * Math.min(BOARD_WIDTH, BOARD_HEIGHT) * 5
+        timeToVanish: POOP_VANISH_TIME
       });
     }
   }
@@ -1071,7 +1138,7 @@
     for (const poop of poops) {
       poop.timeToVanish -= REDRAW_TIME;
 
-      if (!poop.timeToVanish) {
+      if (poop.timeToVanish <= 0) {
         removePoop(poop);
         obstacles.push(poop);
       }
@@ -1082,6 +1149,14 @@
     const idx = poops.findIndex((c) => equals(c, pos));
 
     if (idx > -1) poops.splice(idx, 1);
+  }
+
+  function checkMovement(success) {
+    if (framesCount % Math.floor(wormVelocity) === 0) success();
+  }
+
+  function increaseWormVelocity(time) {
+    wormVelocity = Math.max(0, wormVelocity + time);
   }
 
   function convertStructures() {
